@@ -1,5 +1,7 @@
 import csv
 import xml.etree.ElementTree as ET
+import sys
+import os.path
 
 def read_excel_csv_file(file_name):
     """
@@ -109,6 +111,7 @@ def complete_dict(position_d, profit_d, count_d):
     This function creates a dictionary where the keys are card names and the values are a list of the current position, current profit, and current count.
     Args : dictionary mapping name to position, dictionary mapping name to profit, dictionary mapping name to count.
     Returns : dictionary mapping name to [position, profit, count].
+    The position, profit, and count dictionaries can be produced by the above functions.
     """
     complete_d = {}
     for item in position_d:
@@ -126,8 +129,6 @@ def complete_dict(position_d, profit_d, count_d):
             complete_d[item].append(count_d[item])
     return complete_d
 
-# write_csv_dict(complete_dict(position_dict(read_excel_csv_file("MTGcsv.csv")), count_dict(read_excel_csv_file("MTGcsv.csv")), profit_dict(read_excel_csv_file("MTGcsv.csv"))), "MTGdict.csv")
-
 def total_profits(file):
     """
     This returns the total profit from a csv file
@@ -142,21 +143,77 @@ def total_profits(file):
     total = round(total, 2)
     return total
 
-
 def card_info(file):
     """
     This returns the current position and profit for a given card
     Args : csv file name as string and card name as string
     Returns : string with position, profit, and copies left for the named card
     """
-    print("\n\nUsing " + file + " for data")
-    card = input("\n\nWhat card would you like info for? \n\n")
+    print("\n  --- Using " + file + " for data ---")
+    card = input("\nWhat card would you like information for? \n\n")
     card_table = read_excel_csv_file(file)
     profit = profit_dict(card_table)
     position = position_dict(card_table)
     count = count_dict(card_table)
+    if card not in count:
+        print("\n!!!! I'm sorry, that card is not in the dataset. !!!!")
+        return continue_prog()
     return print("\nCurrent position for " + card + " = $" + str(position[card]) + ", profit so far = $" + str(profit[card]) + ", number of copies left = " + str(count[card]))
 
-# MTG_file = read_excel_csv_file("MTGcsv.csv")
+def continue_prog():
+    """
+    This function handles the prompt for restarting the main() loop if an error occurs in the user input.
+    """
+    continue_prompt = input("\nWould you like to try again? (Yes/No)   ")
+    if (continue_prompt == "Yes" or continue_prompt == "yes" or continue_prompt == "Y" or continue_prompt == "y"):
+        return main()    
+    else:
+        print("\nGoodbye!")
+        sys.exit()
 
-# write_csv_file(MTG_file, "MTGnew.csv")
+def intro():
+    """
+    This function is called at the start of the program.
+    """
+    print("\n*** Welcome to the MTGFinance program ***\n\n  ***** Written by Andrew Moffatt *****")
+    main()    
+
+def main():
+    """
+    This function handles the main program loop. It presents the user with a series of prompts to determine what functions to call.
+    """
+    choice = (input("""\nWhat would you like to do?\n\n1. Access information for a card\n2. Access total profits so far\n3. Create a csv file of positions\n4. Create a csv file of profits\n5. Create a csv file of current stock\n6. Create a csv file of all three\n\n7. Exit program\n\n(Enter the associated number)    """))
+
+    if not choice.isnumeric():
+        print("\n!!!! I'm sorry, please select a valid choice. !!!!")
+        return continue_prog()
+    choice = int(choice)
+    if choice == 7:
+        print("\nGoodbye!")
+        sys.exit()
+    if choice not in range(1, 8):
+        print("\n!!!! I'm sorry, please select a number between 1 and 7. !!!!")
+        return continue_prog()
+    file = input("\nWhat file will you be working with?  ")
+    if not os.path.isfile(file):
+        print("\n!!!!   I'm sorry, but that file doesn't appear to be in the directory.   !!!!")
+        return(continue_prog())
+    read_file = read_excel_csv_file(file)
+    if choice == 1:
+        card_info(file)
+    if choice == 2:
+        total_profits(file)
+    if choice == 3:
+        out_name = input("\nWhat would you like to call the new file? (include .csv at end)\n\n")
+        write_csv_dict(position_dict(read_file), out_name)
+    if choice == 4:
+        out_name = input("\nWhat would you like to call the new file? (include .csv at end)\n\n")
+        write_csv_dict(profit_dict(read_file), out_name)
+    if choice == 5:
+        out_name = input("\nWhat would you like to call the new file? (include .csv at end)\n\n")
+        write_csv_dict(count_dict(read_file), out_name)
+    if choice == 6:
+        out_name = input("\nWhat would you like to call the new file? (include .csv at end)\n\n")
+        write_csv_dict(complete_dict(position_dict(read_file), profit_dict(read_file), count_dict(read_file)), out_name)
+
+intro()
