@@ -14,4 +14,4 @@ The program will also add in other information about the cards, such as their ra
 
 ## Known issues
 
-The current output of some of the functions returns as strings rather than lists.
+The quoting for the values created by the complete dict seems off, but the value is still the expected list.
